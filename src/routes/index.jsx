@@ -8,6 +8,7 @@ import Favorites from "../pages/Favorites";
 import Cart from "../pages/Cart";
 import Contact from "../pages/Contact";
 import About from "../pages/About";
+import NotFound from "../pages/NotFound";
 
 const AppRoutes = () => {
   return (
@@ -21,6 +22,7 @@ const AppRoutes = () => {
       <Route path="/cart" element={<Cart />} />
       <Route path="/contact" element={<Contact />} />
       <Route path="/about" element={<About />} />
+      <Route path="*" element={<NotFound />} />
     </Routes>
   );
 };
