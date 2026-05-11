@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
-import { FiHeart, FiShoppingCart } from "react-icons/fi";
+import { FiHeart, FiShoppingCart, FiEye } from "react-icons/fi";
+import { motion } from "framer-motion";
 import { useCart } from "../../context/CartContext";
 import { useLike } from "../../context/LikeContext";
 import { useToast } from "../../context/ToastContext";
@@ -10,79 +11,109 @@ const CarCard = ({ car }) => {
   const { showToast } = useToast();
 
   const handleCart = () => {
-    if (isInCart(car.id)) {
-      showToast("Allaqachon korzinada!", "info");
-      return;
-    }
+    if (isInCart(car.id)) { showToast("Allaqachon korzinada!", "info"); return; }
     addToCart(car);
     showToast(`${car.brand} ${car.model} korzinaga qo'shildi!`, "success");
   };
 
   const handleLike = () => {
     if (isLiked(car.id)) {
-      toggleLike(car);
-      showToast("Sevimlilardan olib tashlandi", "info");
+      toggleLike(car); showToast("Sevimlilardan olib tashlandi", "info");
     } else {
-      toggleLike(car);
-      showToast("Sevimlilarga qo'shildi ❤️", "success");
+      toggleLike(car); showToast("Sevimlilarga qo'shildi ❤️", "success");
     }
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-md hover:shadow-xl transition-shadow duration-300 overflow-hidden group">
-      <div className="relative overflow-hidden h-48">
+    <motion.div
+      whileHover={{ y: -6 }}
+      transition={{ type: "spring", stiffness: 300, damping: 20 }}
+      className="bg-white rounded-2xl shadow-sm border border-zinc-100 hover:shadow-xl hover:border-amber-200 transition-all duration-300 overflow-hidden group"
+    >
+      {/* Image */}
+      <div className="relative overflow-hidden h-52">
         <img
           src={car.image}
           alt={`${car.brand} ${car.model}`}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
         />
-        {car.isNew && (
-          <span className="absolute top-3 left-3 bg-blue-600 text-white text-xs px-2 py-1 rounded-full font-medium">
-            Yangi
-          </span>
-        )}
-        <button
+        <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
+        {/* Badges */}
+        <div className="absolute top-3 left-3 flex gap-2">
+          {car.isNew && (
+            <span className="bg-amber-500 text-zinc-900 text-xs px-2.5 py-1 rounded-lg font-bold">
+              YANGI
+            </span>
+          )}
+          {!car.isNew && (
+            <span className="bg-zinc-800 text-white text-xs px-2.5 py-1 rounded-lg font-medium">
+              B/U
+            </span>
+          )}
+        </div>
+
+        {/* Like */}
+        <motion.button
+          whileTap={{ scale: 0.85 }}
           onClick={handleLike}
-          className={`absolute top-3 right-3 p-2 rounded-full bg-white shadow transition-colors duration-200
-            ${isLiked(car.id) ? "text-red-500" : "text-gray-400 hover:text-red-500"}`}
+          className={`absolute top-3 right-3 p-2 rounded-xl backdrop-blur-sm transition-all
+            ${isLiked(car.id)
+              ? "bg-red-500 text-white shadow-lg"
+              : "bg-white/80 text-zinc-500 hover:bg-red-50 hover:text-red-500"}`}
         >
-          <FiHeart size={18} fill={isLiked(car.id) ? "currentColor" : "none"} />
-        </button>
+          <FiHeart size={16} fill={isLiked(car.id) ? "currentColor" : "none"} />
+        </motion.button>
+
+        {/* Hover overlay button */}
+        <Link
+          to={`/cars/${car.id}`}
+          className="absolute inset-x-0 bottom-0 flex items-center justify-center gap-2 bg-amber-500 text-zinc-900 py-2.5 text-sm font-bold translate-y-full group-hover:translate-y-0 transition-transform duration-300"
+        >
+          <FiEye size={16} /> Batafsil ko'rish
+        </Link>
       </div>
 
-      <div className="p-4">
-        <h3 className="text-lg font-bold text-gray-800">
-          {car.brand} {car.model}
-        </h3>
-        <p className="text-sm text-gray-500 mb-1">
-          {car.year} • {car.category} • {car.transmission}
-        </p>
-        <p className="text-sm text-gray-400 mb-3 line-clamp-2">{car.description}</p>
+      {/* Info */}
+      <div className="p-5">
+        <div className="flex items-start justify-between mb-1">
+          <h3 className="text-lg font-black text-zinc-900">
+            {car.brand} {car.model}
+          </h3>
+          <span className="text-xs text-zinc-400 bg-zinc-100 px-2 py-1 rounded-lg">{car.year}</span>
+        </div>
+
+        <div className="flex gap-2 mb-3 flex-wrap">
+          {[car.category, car.transmission, car.fuelType].map((tag) => (
+            <span key={tag} className="text-xs text-zinc-500 bg-zinc-50 border border-zinc-100 px-2 py-0.5 rounded-md">
+              {tag}
+            </span>
+          ))}
+        </div>
+
+        <p className="text-sm text-zinc-400 mb-4 line-clamp-2">{car.description}</p>
 
         <div className="flex items-center justify-between">
-          <span className="text-xl font-bold text-blue-600">
-            ${car.price.toLocaleString()}
-          </span>
-          <div className="flex gap-2">
-            <button
-              onClick={handleCart}
-              className={`p-2 rounded-lg transition-colors duration-200
-                ${isInCart(car.id)
-                  ? "bg-green-100 text-green-600"
-                  : "bg-blue-50 text-blue-600 hover:bg-blue-100"}`}
-            >
-              <FiShoppingCart size={18} />
-            </button>
-            <Link
-              to={`/cars/${car.id}`}
-              className="px-3 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              Batafsil
-            </Link>
+          <div>
+            <p className="text-xs text-zinc-400">Narxi</p>
+            <p className="text-2xl font-black text-zinc-900">
+              ${car.price.toLocaleString()}
+            </p>
           </div>
+          <motion.button
+            whileTap={{ scale: 0.9 }}
+            onClick={handleCart}
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold transition-all
+              ${isInCart(car.id)
+                ? "bg-green-500 text-white"
+                : "bg-zinc-900 hover:bg-zinc-700 text-white"}`}
+          >
+            <FiShoppingCart size={16} />
+            {isInCart(car.id) ? "Qo'shildi" : "Korzina"}
+          </motion.button>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 
