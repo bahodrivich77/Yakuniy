@@ -1,13 +1,15 @@
-import { useState, useEffect } from "react";
+﻿import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
   FiMenu, FiX, FiShoppingCart, FiHeart,
   FiHome, FiList, FiTool, FiBook, FiInfo,
-  FiPhone, FiSearch,
+  FiPhone, FiSearch, FiUser,
 } from "react-icons/fi";
 import { useCart } from "../../context/CartContext";
 import { useLike } from "../../context/LikeContext";
+import { useToast } from "../../context/ToastContext";
 import { motion, AnimatePresence } from "framer-motion";
+import { useAuth } from "../../context/AuthContext";
 
 const navLinks = [
   { path: "/", label: "Bosh sahifa", icon: <FiHome /> },
@@ -24,6 +26,8 @@ const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
   const { cartItems } = useCart();
   const { likedItems } = useLike();
+  const { user, isAdmin, logout } = useAuth();
+  const { showToast } = useToast();
   const location = useLocation();
 
   useEffect(() => {
@@ -107,6 +111,38 @@ const Navbar = () => {
                 </span>
               )}
             </Link>
+            {/* User menu */}
+            {user ? (
+              <div className="relative group">
+                <button type="button" className="flex items-center gap-2 bg-zinc-800 hover:bg-zinc-700 px-3 py-2.5 rounded-xl transition-colors">
+                  <span className="text-lg">{user.avatar}</span>
+                  <span className="text-zinc-300 text-sm font-semibold max-w-20 truncate">{user.name}</span>
+                </button>
+                <div className="absolute right-0 top-full mt-2 w-48 bg-zinc-900 border border-zinc-700 rounded-2xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+                  <div className="p-2">
+                    <Link to="/profile"
+                      className="flex items-center gap-2 px-3 py-2.5 text-zinc-300 hover:bg-zinc-800 hover:text-white rounded-xl text-sm transition-colors">
+                      👤 Profil
+                    </Link>
+                    {isAdmin && (
+                      <Link to="/admin"
+                        className="flex items-center gap-2 px-3 py-2.5 text-amber-400 hover:bg-amber-500/10 rounded-xl text-sm transition-colors font-semibold">
+                        ⚡ Admin Panel
+                      </Link>
+                    )}
+                    <button type="button" onClick={() => { logout(); showToast("Chiqildi", "info"); }}
+                      className="w-full flex items-center gap-2 px-3 py-2.5 text-red-400 hover:bg-red-500/10 rounded-xl text-sm transition-colors">
+                      🚪 Chiqish
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <Link to="/login"
+                className="flex items-center gap-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 px-4 py-2.5 rounded-xl transition-colors text-sm font-semibold">
+                <FiUser size={16} /> Kirish
+              </Link>
+            )}
           </div>
         </div>
       </motion.nav>

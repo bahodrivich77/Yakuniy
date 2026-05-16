@@ -1,12 +1,17 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useCart } from "../context/CartContext";
 import { useToast } from "../context/ToastContext";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import { useOrder } from "../context/OrderContext";
 import { FiTrash2, FiShoppingCart, FiArrowLeft, FiShield, FiTruck } from "react-icons/fi";
 
 const Cart = () => {
   const { cartItems, removeFromCart, clearCart, totalPrice } = useCart();
   const { showToast } = useToast();
+  const { user } = useAuth();
+  const { createOrder } = useOrder();
+  const navigate = useNavigate();
 
   const handleRemove = (car) => {
     removeFromCart(car.id);
@@ -89,7 +94,16 @@ const Cart = () => {
             </div>
             <motion.button whileTap={{ scale: 0.97 }}
               className="w-full bg-zinc-900 hover:bg-zinc-800 text-amber-500 py-4 rounded-2xl font-black transition-colors text-sm"
-              onClick={() => showToast("Buyurtma qabul qilindi! 🎉", "success")}
+              onClick={() => {
+                if (!user) {
+                  showToast("Buyurtma berish uchun kiring!", "error");
+                  return;
+                }
+                createOrder(user.id, user.name, cartItems, totalPrice);
+                clearCart();
+                showToast("Buyurtma qabul qilindi! 🎉", "success");
+                navigate("/profile");
+              }}
             >
               Buyurtma berish →
             </motion.button>
